@@ -1,35 +1,63 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { ImageBackground, StyleSheet, useWindowDimensions, View } from 'react-native';
+import * as ScreenOrientation from 'expo-screen-orientation';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+
+import ModelScene from '@/components/3d/ModelScene';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { width, height } = useWindowDimensions();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+      } catch (err) {
+        console.warn('Orientation lock failed:', err);
+      }
+    })();
+
+    return () => {
+      (async () => {
+        try {
+          await ScreenOrientation.unlockAsync();
+        } catch (err) {
+          console.warn('Orientation unlock failed:', err);
+        }
+      })();
+    };
+  }, []);
+
+  // Background image - bg.jpg for landscape mode
+  const bgSource = require('../../assets/images/bg.jpg');
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+    <View style={styles.container}>
+      <ImageBackground 
+        source={bgSource} 
+        style={[styles.bg, { width, height }]} 
+        resizeMode="cover"
+        imageStyle={styles.bgImage}>
+        {/* ModelScene renders transparent GLView on top of background */}
+        <ModelScene />
+      </ImageBackground>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { 
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  bg: { 
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  bgImage: {
+    width: '100%',
+    height: '100%',
+  },
+});

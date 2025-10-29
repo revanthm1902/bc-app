@@ -4,9 +4,23 @@ import { useEffect } from 'react';
 
 export default function AuthLayout() {
   useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    (async () => {
+      try {
+        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+      } catch (e) {
+        // avoid uncaught errors
+        console.warn('Failed to lock auth orientation:', e);
+      }
+    })();
+
     return () => {
-      ScreenOrientation.unlockAsync();
+      (async () => {
+        try {
+          await ScreenOrientation.unlockAsync();
+        } catch (e) {
+          console.warn('Failed to unlock auth orientation:', e);
+        }
+      })();
     };
   }, []);
 
